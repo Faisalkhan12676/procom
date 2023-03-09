@@ -1,5 +1,5 @@
 //import liraries
-import React, { Component } from "react";
+import React, { Component, memo } from "react";
 import {
   View,
   Text,
@@ -11,16 +11,17 @@ import * as Yup from "yup";
 import { Form, Formik } from "formik";
 import Paper, { HelperText } from "react-native-paper";
 import { firebase } from "../Firebaseconfig";
+import { useNavigation } from "@react-navigation/native";
+import { StackActions } from "@react-navigation/native";
 
 const validate = Yup.object({
   email: Yup.string().required("Email is required*").email(),
-  password: Yup.string()
-    .required("Password is required*")
-    .min(8, "Password Must be 8 characters"),
+  password: Yup.string().required("Password is required*"),
 });
 
 // create a component
 const Login = () => {
+  const navigation = useNavigation();
   const LoginUser = async (values) => {
     let { email, password } = values;
     try {
@@ -29,6 +30,7 @@ const Login = () => {
         .signInWithEmailAndPassword(email.trim(), password)
         .then((res) => {
           console.log("response from Firebase Login", res);
+          navigation.dispatch(StackActions.replace("BottomTab"));
         })
         .catch((err) => {
           console.log("error from firebase", err);
@@ -98,7 +100,9 @@ const Login = () => {
                 marginVertical: 10,
               }}
             >
-              <Text style={{ fontSize: 20, color: "#EEE" }}>Login</Text>
+              <Text style={{ fontSize: 20, color: "#EEE", fontWeight: "bold" }}>
+                Login
+              </Text>
             </TouchableOpacity>
           </>
         )}
@@ -107,7 +111,12 @@ const Login = () => {
       <View style={{ marginVertical: 10 }}>
         <Text>
           Dont Have an Account?
-          <Text style={{ fontWeight: "bold" }}> Register Now</Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("Signup")}
+          >
+            <Text style={{ fontWeight: "bold" }}> Register Now</Text>
+          </TouchableOpacity>
         </Text>
       </View>
     </View>
@@ -138,4 +147,4 @@ const styles = StyleSheet.create({
 });
 
 //make this component available to the app
-export default Login;
+export default memo(Login);

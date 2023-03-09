@@ -6,20 +6,22 @@ import {
   Button,
   TouchableOpacity,
   Image,
-  ImageBackground
+  ImageBackground,
 } from "react-native";
-import React from "react";
+import React, { memo } from "react";
 
 const Welcome = () => {
   return (
     <SafeAreaView style={styles.container}>
-        <ImageBackground source={require('../Images/welcome.png')} style={{height:300,width:300}} />
+      <ImageBackground
+        source={require("../Images/welcome.png")}
+        style={{ height: 300, width: 300 }}
+      />
       <View>
         <Text style={styles.text}>Welcome to the Student App</Text>
       </View>
       <View>
         <Text style={styles.welcome}>
-          
           where you'll have access to all the resources you need to succeed in
           your academic journey!
         </Text>
@@ -36,7 +38,7 @@ const Welcome = () => {
   );
 };
 
-export default Welcome;
+export default memo(Welcome);
 
 const styles = StyleSheet.create({
   container: {
@@ -44,35 +46,35 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "flex-start",
     alignItems: "center",
-    position:'relative',
-    marginHorizontal:20
+    position: "relative",
+    marginHorizontal: 20,
   },
   btn: {
-    width: '100%',
+    width: "100%",
     height: 50,
     backgroundColor: "#000",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 5,
-    marginVertical:5
+    marginVertical: 5,
   },
   btnContainer: {
     width: "100%",
     flexDirection: "column",
     justifyContent: "space-around",
     alignItems: "center",
-    position:'absolute',
-    bottom:80
+    position: "absolute",
+    bottom: 80,
   },
-  text:{
-    fontSize:20,
-    textAlign:'justify',
-    fontWeight:'bold',
+  text: {
+    fontSize: 20,
+    textAlign: "justify",
+    fontWeight: "bold",
   },
-  welcome:{
-    textAlign:'center',
-    marginHorizontal:20,
-    marginVertical:20,
-    fontSize:18,
-  }
+  welcome: {
+    textAlign: "center",
+    marginHorizontal: 20,
+    marginVertical: 20,
+    fontSize: 18,
+  },
 });
