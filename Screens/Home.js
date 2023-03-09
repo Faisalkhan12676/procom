@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View, StatusBar, FlatList } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import Header from "../components/Header";
 import { Chip, Divider } from "react-native-paper";
 import { Avatar, Card, IconButton } from "react-native-paper";
 import News from "./News";
 import { firebase } from "../Firebaseconfig";
 import { ActivityIndicator, MD2Colors } from "react-native-paper";
-import { Badge } from 'react-native-paper';
+import { Badge } from "react-native-paper";
 
 const Home = () => {
   const [interests, setInterests] = useState([]);
@@ -127,7 +127,6 @@ const Home = () => {
           title={item.name}
           subtitle={item.email}
           left={(props) => <Avatar.Icon {...props} icon="account" />}
-          
         />
         <Divider />
       </>
@@ -181,6 +180,6 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default memo(Home);
 
 const styles = StyleSheet.create({});
