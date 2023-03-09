@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "eas-cli": "^3.7.2",
     "expo": "~48.0.5",
     "expo-status-bar": "~1.4.4",
     "formik": "^2.2.9",
