@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, SafeAreaView, Image } from "react-native";
 import React, { useState, useEffect } from "react";
+import { Avatar } from "react-native-paper";
 
 const Header = () => {
   const [greeting, setGreeting] = useState("");
@@ -37,22 +38,7 @@ const Header = () => {
               Faisal
             </Text>
           </View>
-          <View
-            style={{
-              height: 50,
-              width: 50,
-              borderRadius: 50,
-              overflow: "hidden",
-            }}
-          >
-            <Image
-              source={require("../Images/welcome.png")}
-              style={{
-                height: "100%",
-                width: "100%",
-              }}
-            />
-          </View>
+          <Avatar.Icon icon={"account"} size={40} />
         </View>
       </View>
     </SafeAreaView>
@@ -84,6 +70,7 @@ const styles = StyleSheet.create({
   },
   svf: {
     marginHorizontal: 10,
+    marginTop: 10,
   },
   card: {
     flexDirection: "row",
