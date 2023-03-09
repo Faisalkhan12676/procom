@@ -6,6 +6,7 @@ import { Avatar, Card, IconButton } from "react-native-paper";
 import News from "./News";
 import { firebase } from "../Firebaseconfig";
 import { ActivityIndicator, MD2Colors } from "react-native-paper";
+import { Badge } from 'react-native-paper';
 
 const Home = () => {
   const [interests, setInterests] = useState([]);
