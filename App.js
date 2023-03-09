@@ -1,11 +1,16 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import Header from "./components/Header";
-import Home from "./Screens/Home";
-import Login from "./Screens/Login";
-import Signup from "./Screens/Signup";
-import Welcome from "./Screens/Welcome";
-
+import "react-native-gesture-handler";
+import { NavigationContainer } from "@react-navigation/native";
+import StackNav from "./Navigation/Stack";
+import Profile from "./Screens/Profile";
+import { Provider as Paper } from "react-native-paper";
+import ProfileN from "./Screens/ProjileN";
 export default function App() {
-  return <Home />;
+  return (
+    <Paper>
+      <ProfileN />
+      {/* <NavigationContainer>
+        <Profile />
+      </NavigationContainer> */}
+    </Paper>
+  );
 }

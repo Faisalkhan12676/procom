@@ -1,21 +1,27 @@
 //import liraries
 import { Formik } from "formik";
-import React, { Component } from "react";
+import React, { Component, memo } from "react";
 import { TextInput } from "react-native";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { HelperText } from "react-native-paper";
 import * as Yup from "yup";
 import { firebase } from "../Firebaseconfig";
+import { useNavigation } from "@react-navigation/native";
+
 const validate = Yup.object({
   name: Yup.string().required("Name is Required*"),
   email: Yup.string().required("Email is required*").email(),
   password: Yup.string()
     .required("Password is required*")
     .min(8, "Password Must be 8 characters"),
+  confirmpassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Passwords must match")
+    .required("Confirm password is required*"),
 });
 
 // create a component
 const Signup = () => {
+  const navigation = useNavigation();
   const RegisterUser = async (values) => {
     let { name, email, password } = values;
     try {
@@ -38,7 +44,15 @@ const Signup = () => {
               Picture,
             })
             .then((res) => {
-              console.log(res, "DataStored");
+              firebase
+                .auth()
+                .signInWithEmailAndPassword(email.trim(), password)
+                .then((res) => {
+                  navigation.dispatch(StackActions.replace("Profile"));
+                })
+                .catch((err) => {
+                  console.log("error from firebase", err);
+                });
             })
             .catch((err) => {
               console.log("Error Storing Data", res.message);
@@ -118,6 +132,17 @@ const Signup = () => {
               {touched.password && errors.password}
             </HelperText>
 
+            <TextInput
+              placeholder="Confirm Password"
+              style={styles.inputs}
+              onChangeText={handleChange("confirmpassword")}
+              onBlur={handleBlur("confirmpassword")}
+              value={values.confirmpassword}
+            />
+            <HelperText type="error" style={styles.error}>
+              {touched.confirmpassword && errors.confirmpassword}
+            </HelperText>
+
             <TouchableOpacity
               onPress={handleSubmit}
               activeOpacity={0.7}
@@ -137,6 +162,17 @@ const Signup = () => {
           </>
         )}
       </Formik>
+      <View style={{ marginVertical: 10 }}>
+        <Text>
+          Already Have an account?
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={{ fontWeight: "bold" }}>Login Now</Text>
+          </TouchableOpacity>
+        </Text>
+      </View>
     </View>
   );
 };
@@ -164,4 +200,4 @@ const styles = StyleSheet.create({
 });
 
 //make this component available to the app
-export default Signup;
+export default memo(Signup);
