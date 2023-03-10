@@ -1,5 +1,5 @@
 //import liraries
-import React, { Component, memo } from "react";
+import React, { Component, memo, useState } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,11 @@ import {
 } from "react-native";
 import * as Yup from "yup";
 import { Form, Formik } from "formik";
-import Paper, { HelperText } from "react-native-paper";
+import Paper, { ActivityIndicator, HelperText, Snackbar } from "react-native-paper";
 import { firebase } from "../Firebaseconfig";
 import { useNavigation } from "@react-navigation/native";
 import { StackActions } from "@react-navigation/native";
+
 
 const validate = Yup.object({
   email: Yup.string().required("Email is required*").email(),
@@ -22,18 +23,22 @@ const validate = Yup.object({
 // create a component
 const Login = () => {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
   const LoginUser = async (values) => {
+    setLoading(true);
     let { email, password } = values;
     try {
       await firebase
         .auth()
         .signInWithEmailAndPassword(email.trim(), password)
         .then((res) => {
+          setLoading(false);
           console.log("response from Firebase Login", res);
-          navigation.dispatch(StackActions.replace("BottomTab"));
+          navigation.dispatch(StackActions.replace("BottomNav"));
         })
         .catch((err) => {
           console.log("error from firebase", err);
+          setLoading(false);
         });
     } catch (err) {
       console.log("error while login", err);
@@ -99,10 +104,17 @@ const Login = () => {
                 elevation: 1,
                 marginVertical: 10,
               }}
+              disabled={loading}
             >
-              <Text style={{ fontSize: 20, color: "#EEE", fontWeight: "bold" }}>
-                Login
-              </Text>
+              {loading ? (
+                <ActivityIndicator />
+              ) : (
+                <Text
+                  style={{ fontSize: 20, color: "#EEE", fontWeight: "bold" }}
+                >
+                  Login
+                </Text>
+              )}
             </TouchableOpacity>
           </>
         )}

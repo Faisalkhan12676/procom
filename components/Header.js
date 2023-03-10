@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, SafeAreaView, Image } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Avatar } from "react-native-paper";
 
-const Header = () => {
+const Header = ({ data }) => {
   const [greeting, setGreeting] = useState("");
   useEffect(() => {
     const date = new Date();
@@ -35,10 +35,12 @@ const Header = () => {
                 fontWeight: "bold",
               }}
             >
-              Faisal
+              {data.name}
             </Text>
           </View>
-          <Avatar.Icon icon={"account"} size={40} />
+          <View style={{ height: 40, width: 40 ,borderRadius:100,overflow:'hidden'}}>
+            <Image source={{ uri: data.Picture }} style={{height:'100%',width:'100%'}} />
+          </View>
         </View>
       </View>
     </SafeAreaView>

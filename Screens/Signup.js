@@ -1,12 +1,14 @@
 //import liraries
 import { Formik } from "formik";
-import React, { Component, memo } from "react";
+import React, { Component, memo, useState } from "react";
 import { TextInput } from "react-native";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { HelperText } from "react-native-paper";
+import { HelperText, Snackbar } from "react-native-paper";
 import * as Yup from "yup";
 import { firebase } from "../Firebaseconfig";
-import { useNavigation } from "@react-navigation/native";
+import { StackActions, useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Paper, { ActivityIndicator } from "react-native-paper";
 
 const validate = Yup.object({
   name: Yup.string().required("Name is Required*"),
@@ -22,7 +24,10 @@ const validate = Yup.object({
 // create a component
 const Signup = () => {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
   const RegisterUser = async (values) => {
+    setLoading(true);
     let { name, email, password } = values;
     try {
       await firebase
@@ -48,10 +53,22 @@ const Signup = () => {
                 .auth()
                 .signInWithEmailAndPassword(email.trim(), password)
                 .then((res) => {
-                  navigation.dispatch(StackActions.replace("Profile"));
+                  console.log(res.user.uid, "USER DATA");
+                  AsyncStorage.setItem("token")
+                    .then((res) => {
+                      console.log("SAVED");
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    });
+                  navigation.dispatch(
+                    StackActions.replace("Profile", { payload: res.user.uid })
+                  );
+                  setLoading(false);
                 })
                 .catch((err) => {
                   console.log("error from firebase", err);
+                  setLoading(false);
                 });
             })
             .catch((err) => {
@@ -61,14 +78,17 @@ const Signup = () => {
         .catch((err) => {
           console.log("Error Creating Login", err.code);
           if (err.code === "auth/email-already-in-use") {
-            // SetErrorCode("Email Already Exisit try Login");
+            //SetErrorCode("Email Already Exisit try Login");
             // onToggleSnackBar();
+            setErr("Email Already Exisit");
           }
         });
     } catch (error) {
       console.log(error, "error10");
     }
   };
+
+  const onDismissSnackBar = () => setLoading(false);
   return (
     <View style={styles.container}>
       <View style={{ width: "100%" }}>
@@ -157,7 +177,11 @@ const Signup = () => {
                 marginVertical: 10,
               }}
             >
-              <Text style={{ fontSize: 20, color: "#EEE" }}>Signup</Text>
+              {loading ? (
+                <ActivityIndicator />
+              ) : (
+                <Text style={{ fontSize: 20, color: "#EEE" }}>Signup</Text>
+              )}
             </TouchableOpacity>
           </>
         )}
@@ -173,6 +197,22 @@ const Signup = () => {
           </TouchableOpacity>
         </Text>
       </View>
+      <Snackbar
+        style={{
+          backgroundColor: "red",
+        }}
+        visible={loading}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'Undo',
+          onPress: () => {
+            // Do something
+            onDismissSnackBar();
+          },
+        }}
+      >
+        {err}
+      </Snackbar>
     </View>
   );
 };

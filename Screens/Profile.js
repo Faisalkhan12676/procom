@@ -1,244 +1,150 @@
-//import liraries
-import React, { Component, memo, useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import Icons from "react-native-vector-icons/Feather";
-import { Chip } from "react-native-paper";
-import { firebase } from "../Firebaseconfig";
-import * as DocumentPicker from "expo-document-picker";
-import { Image } from "react-native";
-import { TouchableOpacity } from "react-native";
+import React, { Component, useEffect, useState } from "react";
+import { View, Text, StyleSheet, Image } from "react-native";
 import DropDown from "react-native-paper-dropdown";
+import { firebase } from "../Firebaseconfig";
+import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
-import { Formik } from "formik";
 import { FlatList } from "react-native";
+import { Avatar, Chip } from "react-native-paper";
+import { TouchableOpacity } from "react-native";
+import CButton from "../components/CButton";
+import Icons from "react-native-vector-icons/Feather";
+import * as ImagePicker from "expo-image-picker";
+import { async } from "@firebase/util";
+import { StackActions } from "@react-navigation/routers";
+import { useNavigation } from "@react-navigation/core";
 
-const validate = Yup.object({
-  interests: Yup.array().required("Interests are Required*"),
-  major: Yup.string().required("Major is Required*"),
-  Picture: Yup.string().required("Please Select Your Picture"),
-});
-const Ainterests = [
-  { name: "Football", key: 1 },
-  { name: "Cricket", key: 2 },
-  { name: "Esports", key: 3 },
-];
-// create a component
-const Profile = () => {
-  const [Selected_Image, SetSelected_Image] = useState("");
-  const [GetMajors, setGetMajors] = useState([]);
-  const [Majors, SetMajors] = useState("");
-  const [showDropDown, setShowDropDown] = useState(false);
-
-  const UploadPicture = async () => {
-    DocumentPicker.getDocumentAsync({ type: "image/*" })
-      .then((resz) => {
-        console.log("response From Picker", resz);
-        const image = resz.uri;
-        SetSelected_Image(image);
-      })
-      .catch((err) => {
-        console.log("Error From Picker", err);
-      });
-  };
-
-  const ProceedUpload = async (Image) => {
-    const responsr = await fetch(Image);
-    const blob = await responsr.blob();
-    const file = `/Userpfp/User-${firebase.auth().currentUser.uid}/`;
-    const ref = firebase
-      .storage()
-      .ref()
-      .child(file)
-      .put(blob)
-      .then(() => {
-        firebase
-          .storage()
-          .ref(file)
-          .getDownloadURL()
-          .then((res) => {
-            const user = firebase.auth().currentUser;
-            let uid;
-            if (user != null) {
-              uid = user.uid;
-              const db = firebase.firestore();
-              const docRef = db.collection("USERS").doc(uid);
-              docRef
-                .update({
-                  Picture: res,
-                })
-                .then(() => {
-                  console.log("Picture Added");
-                })
-                .catch((error) => {
-                  console.log("Error Adding Picture the document:", error);
-                });
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      })
-      .catch(() => {});
-
-    try {
-      await ref;
-    } catch (error) {
-      console.log("error", error);
-    }
-  };
-
-  useEffect(() => {
-    firebase
-      .firestore()
-      .collection("MAJOR")
-      .get()
-      .then((query) => {
-        let x = query.docs.map((doc) => {
-          return {
-            label: doc.data().name,
-            value: doc.data().name,
-          };
-        });
-        setGetMajors(x);
-      });
-  }, []);
+const Profile = ({ route }) => {
+  const { payload } = route.params;
   return (
     <View style={styles.container}>
-      <View style={{ width: "100%" }}>
-        <Text style={{ fontSize: 25, fontWeight: "bold", marginVertical: 10 }}>
-          Complete Your Profile
-        </Text>
-      </View>
-      <Formik
-        validationSchema={validate}
-        initialValues={{ major: "", interests: [], Picture: "" }}
-        onSubmit={(values) => console.log(values)}
+      <View
+        style={{
+          flex: 1,
+          width: "100%",
+        }}
       >
-        {({
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          values,
-          errors,
-          touched,
-          setFieldValue,
-        }) => (
-          <View
-            style={{
-              flex: 1,
-            }}
-          >
-            <View
-              style={{
-                width: 200,
-                height: 200,
-                backgroundColor: "#EEEE",
-                borderRadius: 100,
-                position: "relative",
-                justifyContent: "center",
-                alignItems: "center",
-                alignContent: "center",
-                overflow: "hidden",
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingVertical: 20,
+            height: "auto",
+            backgroundColor: "#000",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                pickImage();
               }}
             >
-              {Selected_Image != "" ? (
+              <View
+                style={{
+                  height: 130,
+                  width: 130,
+                  borderRadius: 100,
+                  overflow: "hidden",
+                }}
+              >
                 <Image
-                  source={{ uri: Selected_Image }}
+                  source={{ uri: payload.Picture }}
                   style={{ width: "100%", height: "100%" }}
                   resizeMode={"cover"}
                 />
-              ) : (
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    UploadPicture();
-                  }}
-                >
-                  <Icons name={"user-plus"} size={100} />
-                </TouchableOpacity>
-              )}
-            </View>
-            <View>
-              <Text>Choose Your Interests</Text>
-              <FlatList
-                data={Ainterests}
-                keyExtractor={(i) => i.key}
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => (
-                  <View>
-                    <Chip
-                      selectedColor="#000"
-                      style={{
-                        margin: 5,
-                        backgroundColor: values.interests.includes(item.key)
-                          ? "#dbdbdb"
-                          : "#EEE",
-                      }}
-                      mode="flat"
-                      onPress={() => {
-                        if (values.interests.includes(item.key)) {
-                          setFieldValue(
-                            values.interests.splice(
-                              values.interests.indexOf(item.key),
-                              1
-                            )
-                          );
-                        } else {
-                          setFieldValue(values.interests.push(item.key));
-                        }
-                      }}
-                      selected={
-                        values.interests.includes(item.key) ? true : false
-                      }
-                      textStyle={{ fontWeight: "bold" }}
-                    >
-                      {item.name}
-                    </Chip>
-                  </View>
-                )}
-              />
-              <Text>Select Your Major</Text>
-
-              {GetMajors.length === 0 ? (
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#000",
-                    fontSize: 18,
-                  }}
-                >
-                  Loading...
-                </Text>
-              ) : (
-                <DropDown
-                  label={"Select your Majors"}
-                  mode={"flat"}
-                  visible={showDropDown}
-                  showDropDown={() => setShowDropDown(true)}
-                  onDismiss={() => setShowDropDown(false)}
-                  value={Majors}
-                  setValue={SetMajors}
-                  list={GetMajors}
-                />
-              )}
-            </View>
+              </View>
+            </TouchableOpacity>
           </View>
-        )}
-      </Formik>
+          <Text
+            style={{
+              fontSize: 30,
+              fontWeight: "bold",
+              alignSelf: "center",
+              marginHorizontal: 10,
+              fontWeight: "bold",
+              color: "#FFF",
+            }}
+          >
+            {payload.name}
+          </Text>
+          <Text
+            style={{
+              color: "#FFF",
+              marginVertical: 10,
+              textAlign: "center",
+            }}
+          >
+            {payload.email} - #123
+          </Text>
+        </View>
+
+        <View>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "bold",
+              marginHorizontal: 20,
+              marginVertical: 10,
+            }}
+          >
+            Major
+          </Text>
+          <Text
+            style={{
+              marginHorizontal: 20,
+            }}
+          >
+            {payload.major}
+          </Text>
+        </View>
+
+        <View>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "bold",
+              marginHorizontal: 20,
+              marginVertical: 10,
+            }}
+          >
+            Interests
+          </Text>
+          {payload.interests.map((e) => (
+            <Text
+              style={{
+                marginHorizontal: 20,
+              }}
+            >
+              {e}
+            </Text>
+          ))}
+        </View>
+      </View>
     </View>
   );
 };
 
-// define your styles
+export default Profile;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    marginVertical: "10%",
     alignItems: "center",
-    padding: 20,
+  },
+  Header: {
+    backgroundColor: "#EEE",
+    width: "100%",
+  },
+  Mid: {
+    width: "100%",
+    backgroundColor: "#000",
+    height: 200,
+
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
   },
 });
-
-//make this component available to the app
-export default memo(Profile);

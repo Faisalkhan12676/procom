@@ -1,4 +1,13 @@
-import { StyleSheet, Text, View, StatusBar, FlatList } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  StatusBar,
+  FlatList,
+  ScrollView,
+  Image,
+  TouchableOpacity
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { Chip, Divider } from "react-native-paper";
@@ -6,7 +15,8 @@ import { Avatar, Card, IconButton } from "react-native-paper";
 import News from "./News";
 import { firebase } from "../Firebaseconfig";
 import { ActivityIndicator, MD2Colors } from "react-native-paper";
-import { Badge } from 'react-native-paper';
+import { Badge } from "react-native-paper";
+import { useNavigation } from "@react-navigation/core";
 
 const Home = () => {
   const [interests, setInterests] = useState([]);
@@ -14,6 +24,7 @@ const Home = () => {
   const [currentUser, setCurrentUser] = useState({});
   const [selectedchip, setSelectedChip] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   const getInterests = () => {
     firebase
@@ -55,11 +66,12 @@ const Home = () => {
     firebase
       .firestore()
       .collection("USERS")
-      .doc("o1cCechC2lbmCT5U7CExjyY3SsF2")
+      .doc(firebase.auth().currentUser.uid)
       .get()
       .then((snapshot) => {
         const data = snapshot.data();
         setCurrentUser(data);
+        console.log(data);
       })
       .catch((err) => {
         console.log(err);
@@ -72,31 +84,27 @@ const Home = () => {
     getStudents();
   }, []);
 
-  const handleFilter = (name) => {
+  const handleFilter = (id) => {
     setLoading(true);
-    setSelectedChip(name);
-    if (name === "all") {
-      setStudents(students);
-      setLoading(false);
-    } else {
-      firebase
-        .firestore()
-        .collection("USERS")
-        .where("interests", "array-contains", name)
-        .get()
-        .then((querySnapshot) => {
-          setLoading(false);
-          let stdArr = [];
-          querySnapshot.forEach((e) => {
-            stdArr.push(e.data());
-          });
-          setStudents(stdArr);
-        })
-        .catch((error) => {
-          console.log("Error getting documents: ", error);
-          setLoading(false);
+    setSelectedChip(id);
+
+    firebase
+      .firestore()
+      .collection("USERS")
+      .where("interests", "array-contains", Number(id))
+      .get()
+      .then((querySnapshot) => {
+        setLoading(false);
+        let stdArr = [];
+        querySnapshot.forEach((e) => {
+          stdArr.push(e.data());
         });
-    }
+        setStudents(stdArr);
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+        setLoading(false);
+      });
   };
 
   const handleSelectAll = () => {
@@ -111,24 +119,44 @@ const Home = () => {
         style={{
           marginHorizontal: 5,
         }}
-        selected={selectedchip === item.name}
-        selectedColor={selectedchip === item.name ? "#6c757d" : "#000"}
-        onPress={() => handleFilter(item.name)}
+        selected={selectedchip === item.id}
+        selectedColor={selectedchip === item.id ? "#6c757d" : "#000"}
+        onPress={() => handleFilter(item.id)}
       >
         {item.name}
       </Chip>
     );
   };
 
+
+
+  const handleNav = (item) =>{
+    navigation.navigate('PProfile',{payload:item})
+  }
   const userCard = ({ item }) => {
     return (
       <>
+        <TouchableOpacity onPress={()=>handleNav(item)}>
         <Card.Title
           title={item.name}
           subtitle={item.email}
-          left={(props) => <Avatar.Icon {...props} icon="account" />}
-          
+          left={(props) => (
+            <View
+              style={{
+                height: 40,
+                width: 40,
+                borderRadius: 100,
+                overflow: "hidden",
+              }}
+            >
+              <Image
+                source={{ uri: item.Picture }}
+                style={{ height: "100%", width: "100%" }}
+              />
+            </View>
+          )}
         />
+        </TouchableOpacity>
         <Divider />
       </>
     );
@@ -137,9 +165,8 @@ const Home = () => {
   return (
     <View>
       <StatusBar />
-      <Header />
+      <Header data={currentUser} />
       <News />
-
       <View
         style={{
           marginHorizontal: 10,
@@ -162,21 +189,27 @@ const Home = () => {
           showsHorizontalScrollIndicator={false}
         />
       </View>
-      <View>
-        {!loading ? (
-          <FlatList
-            data={students}
-            keyExtractor={(item) => item.id}
-            renderItem={userCard}
-          />
-        ) : (
-          <ActivityIndicator
-            style={{ marginTop: 20 }}
-            animating={true}
-            color={MD2Colors.amber200}
-          />
-        )}
-      </View>
+      <ScrollView>
+        <View
+          style={{
+            height: 300,
+          }}
+        >
+          {!loading ? (
+            <FlatList
+              data={students}
+              keyExtractor={(item) => item.id}
+              renderItem={userCard}
+            />
+          ) : (
+            <ActivityIndicator
+              style={{ marginTop: 20 }}
+              animating={true}
+              color={MD2Colors.amber200}
+            />
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 };
