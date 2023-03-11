@@ -6,6 +6,7 @@ import { Provider as Paper } from "react-native-paper";
 import ProfileN from "./Screens/ProjileN";
 import Home from "./Screens/Home";
 import UserProfile from "./Screens/Userprofile";
+//molabux
 export default function App() {
   return (
     <Paper>
